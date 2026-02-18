@@ -1,5 +1,5 @@
 {
-  "name": "chat-secure-guard",
+  "name": "chat-secure-guard-js",
   "version": "0.0.2",
   "description": "JavaScript/TypeScript client for chat_secure_guard - End-to-End Encryption & Secure Storage",
   "main": "dist/index.js",
@@ -25,8 +25,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/example/chat_secure_guard.git"
+    "url": "git+https://github.com/Naimish-Kumar/chat_secure_guard_js.git"
   },
+  "bugs": {
+    "url": "https://github.com/Naimish-Kumar/chat_secure_guard_js/issues"
+  },
+  "homepage": "https://github.com/Naimish-Kumar/chat_secure_guard_js#readme",
   "dependencies": {
     "libsodium-wrappers": "^0.7.13"
   },
