@@ -1,0 +1,39 @@
+{
+  "name": "chat-secure-guard",
+  "version": "0.0.2",
+  "description": "JavaScript/TypeScript client for chat_secure_guard - End-to-End Encryption & Secure Storage",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "ts-node examples/demo.ts"
+  },
+  "keywords": [
+    "e2ee",
+    "libsodium",
+    "encryption",
+    "security",
+    "chat",
+    "file-encryption",
+    "key-management"
+  ],
+  "author": "Naimish Kumar",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/example/chat_secure_guard.git"
+  },
+  "dependencies": {
+    "libsodium-wrappers": "^0.7.13"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^18.0.0",
+    "@types/libsodium-wrappers": "^0.7.13",
+    "ts-node": "^10.9.1"
+  }
+}
