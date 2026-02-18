@@ -1,4 +1,4 @@
-# chat-secure-guard
+# chat-secure-guard-js
 
 A complete JavaScript/TypeScript client for End-to-End Encryption (E2EE), secure file encryption, and key management. Compatible with React, Vue, Angular, and Node.js.
 
@@ -13,7 +13,7 @@ A complete JavaScript/TypeScript client for End-to-End Encryption (E2EE), secure
 ## Installation
 
 ```bash
-npm install chat-secure-guard
+npm install chat-secure-guard-js
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ npm install chat-secure-guard
 You must initialize the library once before using it. This ensures `libsodium` is ready and keys are loaded/generated.
 
 ```typescript
-import { ChatSecureGuard, SecureStorageInterface } from 'chat-secure-guard';
+import { ChatSecureGuard, SecureStorageInterface } from 'chat-secure-guard-js';
 
 // Optional: Custom storage implementation (e.g. for React Native or Browser)
 // By default, it uses an In-Memory storage (not persistent across reloads).
@@ -90,7 +90,7 @@ const decryptedFile = await guard.decryptFile(encryptedFile, key);
 
 ### React / Vue / Angular
 
-1.  **Install**: `npm install chat-secure-guard`
+1.  **Install**: `npm install chat-secure-guard-js`
 2.  **Import**: Use standard ES imports.
 3.  **Storage**: Implement `SecureStorageInterface` using `localStorage` or `IndexedDB` (recommended for persistence).
 
