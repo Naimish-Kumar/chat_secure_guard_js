@@ -11,6 +11,10 @@ export class ChatSecureGuard {
     private encryptionService: EncryptionService;
     private fileCrypto: FileCrypto;
 
+    public get sodium(): typeof sodium {
+        return this.sodiumInstance;
+    }
+
     private constructor(sodiumLib: typeof sodium, storage: SecureStorageInterface) {
         this.sodiumInstance = sodiumLib;
         this.keyManager = new KeyManager(sodiumLib, storage);

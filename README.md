@@ -1,14 +1,17 @@
-# chat-secure-guard-js
 
-A complete JavaScript/TypeScript client for End-to-End Encryption (E2EE), secure file encryption, and key management. Compatible with React, Vue, Angular, and Node.js.
+## Overview
+`chat-secure-guard-js` is a secure end-to-end encryption library for **Web**, **React Native**, and **Node.js**.
+
+It brings the **Double Ratchet Algorithm** (WhatsApp & Signal protocol) to JS/TS applications, enabling perfect forward secrecy and secure messaging.
+
+This package is fully compatible with the Flutter `chat_secure_guard` library, allowing you to build cross-platform secure chat apps.
 
 ## Features
-
-- ✅ **End-to-End Encryption (E2EE)** using `libsodium` (via `libsodium-wrappers`).
-- ✅ **Secure Key Management** (Public/Private Key generation & storage).
-- ✅ **File Encryption/Decryption** (Symmetric authenticated encryption).
-- ✅ **Universal Compatibility** (Browser & Node.js).
-- ✅ **Pluggable Secure Storage** (Use `localStorage`, `AsyncStorage`, or custom).
+- 🔄 **Double Ratchet Algorithm**: Military-grade security with per-message key rotation.
+- 📱 **React Native Support**: Works out-of-the-box (requires polyfill).
+- 🌐 **Web Support**: Use in React, Vue, Angular, or vanilla JS.
+- 🔑 **Secure Key Management**: Automated ED25519 key generation.
+- 📂 **File Encryption**: Securely encrypt large files (images/videos).
 
 ## Installation
 
@@ -16,92 +19,101 @@ A complete JavaScript/TypeScript client for End-to-End Encryption (E2EE), secure
 npm install chat-secure-guard-js
 ```
 
-## Usage
+> **Note:** This package is powered by `libsodium-wrappers` which is installed automatically.
+
+## React Native Setup 📱
+
+React Native requires a polyfill for random bytes and a secure storage adapter.
+
+1.  **Install Dependencies**:
+    ```bash
+    npm install react-native-get-random-values expo-secure-store
+    ```
+
+2.  **Add Polyfill**: In your `index.js` (at the top):
+    ```javascript
+    import 'react-native-get-random-values';
+    ```
+
+3.  **Implement Storage Adapter**:
+    Create a `RNSecureStorage` class implementing `SecureStorageInterface` using `expo-secure-store` (see `examples/ReactNativeAdapter.ts` for full code).
+
+## Web Usage 🌐
 
 ### 1. Initialization
-
-You must initialize the library once before using it. This ensures `libsodium` is ready and keys are loaded/generated.
+Initialize once at app start.
 
 ```typescript
-import { ChatSecureGuard, SecureStorageInterface } from 'chat-secure-guard-js';
+import { ChatSecureGuard } from 'chat-secure-guard-js';
 
-// Optional: Custom storage implementation (e.g. for React Native or Browser)
-// By default, it uses an In-Memory storage (not persistent across reloads).
-class MyBrowserStorage implements SecureStorageInterface {
-  async write(key: string, value: string) { localStorage.setItem(key, value); }
-  async read(key: string) { return localStorage.getItem(key); }
-  async delete(key: string) { localStorage.removeItem(key); }
-}
-
-// Initialize
-const guard = await ChatSecureGuard.init(new MyBrowserStorage());
+// Pass your storage adapter (e.g. localStorage wrapper)
+const guard = await ChatSecureGuard.init(new MyLocalStorageAdapter());
 ```
 
-### 2. Key Management
+### 2. Double Ratchet Encryption (WhatsApp Style) 🚀
 
-Retrieve your public key to share with other users.
+This is the recommended way to secure chats. Keys rotate automatically.
+
+#### Setup Sessions
+Use a shared secret (derived via X3DH or key exchange server).
 
 ```typescript
-const publicKey = await guard.getPublicKey();
-// Send `publicKey` (Uint8Array) to your server/other users.
+import { DoubleRatchet } from 'chat-secure-guard-js';
+
+// 1. Get Sodium Instance
+const sodium = guard.sodium;
+const ratchet = new DoubleRatchet(sodium);
+
+// 2. Initialize Session (Alice - Sender)
+const senderSession = ratchet.initSenderSession(sharedSecret, bobPublicKey);
+
+// 3. Initialize Session (Bob - Receiver)
+const receiverSession = ratchet.initReceiverSession(sharedSecret, bobPreKey);
 ```
 
-### 3. Encrypting Messages
-
-Encrypt a message for a specific recipient using their Public Key.
-
+#### Send Message
 ```typescript
-const message = "Hello Secure World";
-const receiverPublicKey = ...; // Uint8Array from recipient
-
-const encryptedBase64 = await guard.encrypt(message, receiverPublicKey);
-console.log('Encrypted:', encryptedBase64);
+const packet = ratchet.encrypt(senderSession, "Hello Secure Web!");
+// packet contains: { header_key, nonce, ciphertext }
+// Send this object to your server.
 ```
 
-### 4. Decrypting Messages
-
-Decrypt a message received from a sender.
-
+#### Receive Message
 ```typescript
-const senderPublicKey = ...; // Uint8Array from sender
-const decryptedText = await guard.decrypt(encryptedBase64, senderPublicKey);
-console.log('Decrypted:', decryptedText);
+// Bob receives 'packet'
+const msg = ratchet.decrypt(receiverSession, packet);
+console.log(msg); // "Hello Secure Web!"
 ```
 
-### 5. File Encryption
-
-Encrypt files (e.g., images, documents) using a symmetric key.
+### 3. File Encryption
+Encrypt files before uploading (e.g., to S3/Firebase).
 
 ```typescript
-// Generate a random symmetric key (or derive one)
-import sodium from 'libsodium-wrappers';
-await sodium.ready;
-const key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
+const fileBytes = new Uint8Array([1, 2, 3]); // Your file data
+const key = sodium.randombytes_buf(32);
 
 // Encrypt
-const fileBytes = new Uint8Array([1, 2, 3]); // Your file content
-const encryptedFile = await guard.encryptFile(fileBytes, key);
+const encrypted = await guard.encryptFile(fileBytes, key);
 
 // Decrypt
-const decryptedFile = await guard.decryptFile(encryptedFile, key);
+const original = await guard.decryptFile(encrypted, key);
 ```
 
-## Framework Integration
+## API Reference
 
-### React / Vue / Angular
+### `ChatSecureGuard`
+- `init(storage)`: Initialize library (required).
+- `getPublicKey()`: Returns user's public identity key.
+- `encrypt(msg, pubKey)`: One-shot encryption (legacy).
+- `decrypt(msg, pubKey)`: One-shot decryption (legacy).
+- `encryptFile(bytes, key)`: Symmetric file encryption.
+- `decryptFile(bytes, key)`: Symmetric file decryption.
 
-1.  **Install**: `npm install chat-secure-guard-js`
-2.  **Import**: Use standard ES imports.
-3.  **Storage**: Implement `SecureStorageInterface` using `localStorage` or `IndexedDB` (recommended for persistence).
-
-### Node.js
-Works out of the box with `libsodium-wrappers`. Use a file-system based storage or environment variables for key persistence if needed.
-
-## Security Notes
-
-- **Storage**: The default `InMemorySecureStorage` does not persist keys across page reloads. For production apps, implement a persistent storage adapter securely.
-- **Keys**: Never expose your Private Key.
-- **Network**: Only send Encrypted messages and Public Keys over the network.
+### `DoubleRatchet`
+- `initSenderSession(secret, remoteKey)`: Start a session as initiator.
+- `initReceiverSession(secret, localPair)`: Start a session as responder.
+- `encrypt(session, msg)`: Encrypt next message & rotate keys.
+- `decrypt(session, packet)`: Decrypt received message & rotate keys.
 
 ## License
 MIT
